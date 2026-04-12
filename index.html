@@ -519,7 +519,7 @@
     </form>
   </section>
 
-  <!-- 送信完了画面 -->
+  <!-- 送信完了画面（通常） -->
   <section class="form-card thanks-screen" id="thanksSection">
     <div class="check-icon">
       <svg width="32" height="32" fill="none" stroke="#fff" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
@@ -529,6 +529,25 @@
       ご記入のメールアドレスに確認メールをお送りいたします。<br>
       当日は14:00までに新居浜商工会館へお越しください。<br><br>
       ご不明点がございましたら、お気軽にご連絡ください。<br>
+      <strong>株式会社KofC</strong><br>
+      y.kato@kofc-ai.com
+    </p>
+  </section>
+
+  <!-- 送信完了画面（キャンセル待ち） -->
+  <section class="form-card thanks-screen" id="waitlistSection">
+    <div class="check-icon" style="background: #e67e22;">
+      <svg width="32" height="32" fill="none" stroke="#fff" stroke-width="3" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/></svg>
+    </div>
+    <h2>ご登録ありがとうございます</h2>
+    <p>
+      大変ありがたいことに、4/20開催分は<strong>満席</strong>となりました。<br>
+      現在<strong>キャンセル待ち</strong>でのご登録を承っております。<br><br>
+      キャンセルが出た場合は、優先的にご連絡いたします。<br>
+      また、<strong>5月に第2回の開催を予定</strong>しておりますので、<br>
+      日程が決まり次第、優先的にご案内いたします。<br><br>
+      セミナーを待たずに<strong>個別相談（無料）</strong>も可能です。<br>
+      ご希望の方は、確認メールにご返信ください。<br><br>
       <strong>株式会社KofC</strong><br>
       y.kato@kofc-ai.com
     </p>
@@ -565,9 +584,13 @@ async function handleSubmit(e) {
     const result = await response.json();
 
     if (result.status === "ok") {
-      // 送信完了画面を表示
+      // 送信完了画面を表示（キャンセル待ちかどうかで分岐）
       document.getElementById('formSection').style.display = 'none';
-      document.getElementById('thanksSection').style.display = 'block';
+      if (result.waitlist) {
+        document.getElementById('waitlistSection').style.display = 'block';
+      } else {
+        document.getElementById('thanksSection').style.display = 'block';
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       throw new Error(result.message || "送信に失敗しました");
