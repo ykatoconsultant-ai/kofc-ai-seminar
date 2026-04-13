@@ -364,7 +364,7 @@
     </div>
     <div class="hero-badges">
       <span class="badge badge-free">参加無料</span>
-      <span class="badge badge-limit" style="background:#e67e22; border:none;">満席御礼 → 追加10席ご用意</span>
+      <span class="badge badge-limit" style="background:#e67e22; border:none;" id="heroBadge">満席御礼 → 追加席ご用意</span>
     </div>
   </div>
 </header>
@@ -382,7 +382,7 @@
       <span class="overview-label">参加費</span>
       <span>無料</span>
       <span class="overview-label">定員</span>
-      <span><strong style="color:#e67e22;">【満席御礼】</strong>ご好評につき追加10席をご用意しました（残席わずか・1社2名まで）</span>
+      <span id="capacityInfo"><strong style="color:#e67e22;">【満席御礼】</strong>ご好評につき追加席をご用意しました（1社2名まで）</span>
       <span class="overview-label">対象</span>
       <span>中小企業の経営者・管理職<br>（業種不問・AI未経験OK）</span>
       <span class="overview-label">主催</span>
@@ -561,6 +561,30 @@
 
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzVmVz6PDa5ER-TfIq_NPGrU_PwjQMuw1oviQkA3PhoAq_OgeAz21VRvtC8nl0Mziejaw/exec";
+
+// ページ読み込み時に残席数を取得
+(async function loadRemaining() {
+  try {
+    const res = await fetch(GAS_URL);
+    const data = await res.json();
+    const remaining = data.remaining;
+    const count = data.count;
+
+    const badge = document.getElementById('heroBadge');
+    const info = document.getElementById('capacityInfo');
+
+    if (remaining <= 0) {
+      // 追加席も満席
+      badge.textContent = '満席（キャンセル待ち受付中）';
+      info.innerHTML = '<strong style="color:#e74c3c;">【満席】</strong>現在キャンセル待ちでの受付となります';
+    } else {
+      badge.textContent = count + '名が申込済み → 残り' + remaining + '席';
+      info.innerHTML = '<strong style="color:#e67e22;">【満席御礼】</strong>ご好評につき追加席をご用意しました（<strong>残り' + remaining + '席</strong>・1社2名まで）';
+    }
+  } catch (e) {
+    // 取得失敗時はデフォルト表記のまま
+  }
+})();
 
 async function handleSubmit(e) {
   e.preventDefault();
