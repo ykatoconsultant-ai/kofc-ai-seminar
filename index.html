@@ -571,29 +571,36 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxp5BvRDRxLpQW91Fkzq9fk
     const res = await fetch(GAS_URL);
     const data = await res.json();
     const count = data.count;
-    const visibleCapacity = 20;
-    const totalCapacity = 30;
+    // 残り5席を切るたびに5席ずつ自動増席（初期20席 → 上限30席で締切）
+    const INITIAL_CAPACITY = 20;
+    const HARD_CAPACITY = 30;
+    const STEP = 5;
+    const THRESHOLD = 5; // 残席がこれ未満になったら増席
+
+    let capacity = INITIAL_CAPACITY;
+    while (capacity - count < THRESHOLD && capacity < HARD_CAPACITY) {
+      capacity = Math.min(capacity + STEP, HARD_CAPACITY);
+    }
+    const remaining = Math.max(capacity - count, 0);
 
     const badge = document.getElementById('heroBadge');
     const info = document.getElementById('capacityInfo');
 
-    if (count >= totalCapacity) {
-      // 30名上限も満席
+    if (count >= HARD_CAPACITY) {
+      // 30名上限も満席 → キャンセル待ち
       badge.textContent = '満席（キャンセル待ち受付中）';
       badge.style.background = '#e74c3c';
       info.innerHTML = '<strong style="color:#e74c3c;">【満席】</strong>現在キャンセル待ちでの受付となります';
-    } else if (count >= visibleCapacity) {
-      // 表示定員20名は満席、追加席で受付中
-      const remainingExtra = totalCapacity - count;
-      badge.textContent = '満席御礼 → 追加席ご用意（残り' + remainingExtra + '席）';
+    } else if (capacity > INITIAL_CAPACITY) {
+      // 増席中（ご好評につき）
+      badge.textContent = 'ご好評につき増席（残り' + remaining + '席）';
       badge.style.background = '#e67e22';
       badge.style.borderColor = '#e67e22';
-      info.innerHTML = '<strong style="color:#e67e22;">【満席御礼】</strong>ご好評につき追加席をご用意しました(<strong>残り' + remainingExtra + '席</strong>・1社2名まで)';
+      info.innerHTML = '<strong style="color:#e67e22;">【ご好評につき増席】</strong>追加席をご用意しました(<strong>残り' + remaining + '席</strong>・1社2名まで)';
     } else {
       // 通常の先着受付中
-      const remaining = visibleCapacity - count;
-      badge.textContent = '定員20名・残り' + remaining + '席';
-      info.innerHTML = '20名（先着順・1社2名まで／<strong>残り' + remaining + '席</strong>）';
+      badge.textContent = '定員' + capacity + '名・残り' + remaining + '席';
+      info.innerHTML = capacity + '名（先着順・1社2名まで／<strong>残り' + remaining + '席</strong>）';
     }
   } catch (e) {
     // 取得失敗時はデフォルト表記のまま
